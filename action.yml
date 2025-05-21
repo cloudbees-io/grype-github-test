@@ -1,0 +1,90 @@
+name: grype-hybrid
+description: Run grype compliance scan with CloudBees hybrid integration
+
+inputs:
+  cloudbees-pat: 
+    description: Cloudbees PAT token of User
+    required: true
+  cloudbees-url: 
+    description: Cloudbees API URL
+    required: false
+    default: 'https://api.cloudbees.io'
+  step-id:
+    description: GHA Step ID
+    required: false
+    default: ''
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: Create tar of source code
+      shell: bash
+      run: |
+        tar -cvf output.tar .
+
+    - name: Create request JSON file in workspace
+      shell: bash
+      run: |
+        FILE_PATH="$GITHUB_WORKSPACE/store/request/request.json"
+        mkdir -p "$(dirname "$FILE_PATH")"
+        touch "$FILE_PATH"
+  
+    - name: Generate reference files 
+      shell: bash
+      run: |
+        docker run --rm \
+          -v $GITHUB_WORKSPACE:$GITHUB_WORKSPACE \
+          -e INPUT_CLOUDBEES_API_TOKEN="${{ inputs.cloudbees-pat }}" \
+          -e INPUT_CLOUDBEES_API_URL="${{ inputs.cloudbees-url }}" \
+          -e INPUT_RUN_ID="${{ github.run_id }}" \
+          -e INPUT_IS_GITHUB_WORKFLOW="true" \
+          -e GITHUB_RUN_ID="${{ github.run_id }}" \
+          -e GITHUB_WORKFLOW_REF="${{ github.workflow_ref }}" \
+          -e GITHUB_RUN_ATTEMPT="${{ github.run_attempt }}" \
+          -e GITHUB_RUN_NUMBER="${{ github.run_number }}" \
+          -e GITHUB_REF_NAME="${{ github.ref_name }}" \
+          -e GITHUB_REPOSITORY="${{ github.repository }}" \
+          -e GITHUB_SERVER_URL="${{ github.server_url }}/${{ github.repository }}" \
+          -e GITHUB_JOB="${{ github.job }}" \
+          -e GITHUB_PROVIDER="GITHUB" \
+          -e GITHUB_WORKSPACE="${{ github.workspace }}" \
+          -e GITHUB_ENV="$GITHUB_ENV" \
+          public.ecr.aws/l7o7z1g8/actions/assets-plugin-chain-utils:0dea78066b1aecbca8a3a6674aade8ee49b5d57a \
+          generate-references --asset-type "CODE"
+
+    - name: Run grype compliance plugin
+      shell: bash
+      run: |
+        docker run --rm \
+          -u root \
+          -v $GITHUB_WORKSPACE:$GITHUB_WORKSPACE \
+          -e GITHUB_WORKSPACE="$GITHUB_WORKSPACE" \
+          -e RUN_ID="${{ github.run_id }}" \
+          -e JOB_ID="${{ github.job }}" \
+          -e STEP_ID="${{ inputs.step-id }}" \
+          public.ecr.aws/l7o7z1g8/actions/assets-grype-scanner:24c5c03b4793488b64cfb076262f28b81727cdf6 \
+          --mode single
+
+    - name: Complete execution plan
+      shell: bash
+      run: |
+       docker run --rm \
+          -v $GITHUB_WORKSPACE:$GITHUB_WORKSPACE \
+          -e INPUT_CLOUDBEES_API_TOKEN="${{ inputs.cloudbees-pat }}" \
+          -e INPUT_CLOUDBEES_API_URL="${{ inputs.cloudbees-url }}" \
+          -e INPUT_RUN_ID="${{ github.run_id }}" \
+          -e INPUT_IS_GITHUB_WORKFLOW="true" \
+          -e GITHUB_RUN_ID="${{ github.run_id }}" \
+          -e GITHUB_WORKFLOW_REF="${{ github.workflow_ref }}" \
+          -e GITHUB_RUN_ATTEMPT="${{ github.run_attempt }}" \
+          -e GITHUB_RUN_NUMBER="${{ github.run_number }}" \
+          -e GITHUB_REF_NAME="${{ github.ref_name }}" \
+          -e GITHUB_REPOSITORY="${{ github.repository }}" \
+          -e GITHUB_SERVER_URL="${{ github.server_url }}/${{ github.repository }}" \
+          -e GITHUB_JOB="${{ github.job }}" \
+          -e GITHUB_PROVIDER="GITHUB" \
+          -e GITHUB_WORKSPACE="${{ github.workspace }}" \
+          -e GITHUB_ENV="$GITHUB_ENV" \
+          public.ecr.aws/l7o7z1g8/actions/assets-plugin-chain-utils:0dea78066b1aecbca8a3a6674aade8ee49b5d57a \
+          process-outputs
