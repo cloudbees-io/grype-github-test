@@ -35,7 +35,6 @@ runs:
       run: |
         docker run --rm \
           -v $GITHUB_WORKSPACE:$GITHUB_WORKSPACE \
-          -e INPUT_CLOUDBEES_API_TOKEN="${{ inputs.cloudbees-pat }}" \
           -e INPUT_CLOUDBEES_API_URL="${{ inputs.cloudbees-url }}" \
           -e INPUT_RUN_ID="${{ github.run_id }}" \
           -e INPUT_IS_GITHUB_WORKFLOW="true" \
@@ -50,10 +49,12 @@ runs:
           -e GITHUB_PROVIDER="GITHUB" \
           -e GITHUB_WORKSPACE="${{ github.workspace }}" \
           -e GITHUB_ENV="$GITHUB_ENV" \
+          -e ACTIONS_ID_TOKEN_REQUEST_TOKEN=$ACTIONS_ID_TOKEN_REQUEST_TOKEN \
+          -e ACTIONS_ID_TOKEN_REQUEST_URL=$ACTIONS_ID_TOKEN_REQUEST_URL \
           public.ecr.aws/l7o7z1g8/actions/assets-plugin-chain-utils:0dea78066b1aecbca8a3a6674aade8ee49b5d57a \
           generate-references --asset-type "CODE"
 
-    - name: Run grype compliance plugin
+    - name: Run gitleaks compliance plugin
       shell: bash
       run: |
         docker run --rm \
@@ -63,7 +64,7 @@ runs:
           -e RUN_ID="${{ github.run_id }}" \
           -e JOB_ID="${{ github.job }}" \
           -e STEP_ID="${{ inputs.step-id }}" \
-          public.ecr.aws/l7o7z1g8/actions/assets-grype-scanner:24c5c03b4793488b64cfb076262f28b81727cdf6 \
+          public.ecr.aws/l7o7z1g8/actions/assets-grype-scanner:f7a2d9dec7b30963076ef333557366684b26521d \
           --mode single
 
     - name: Complete execution plan
@@ -71,7 +72,6 @@ runs:
       run: |
        docker run --rm \
           -v $GITHUB_WORKSPACE:$GITHUB_WORKSPACE \
-          -e INPUT_CLOUDBEES_API_TOKEN="${{ inputs.cloudbees-pat }}" \
           -e INPUT_CLOUDBEES_API_URL="${{ inputs.cloudbees-url }}" \
           -e INPUT_RUN_ID="${{ github.run_id }}" \
           -e INPUT_IS_GITHUB_WORKFLOW="true" \
@@ -86,5 +86,7 @@ runs:
           -e GITHUB_PROVIDER="GITHUB" \
           -e GITHUB_WORKSPACE="${{ github.workspace }}" \
           -e GITHUB_ENV="$GITHUB_ENV" \
+          -e ACTIONS_ID_TOKEN_REQUEST_TOKEN=$ACTIONS_ID_TOKEN_REQUEST_TOKEN \
+          -e ACTIONS_ID_TOKEN_REQUEST_URL=$ACTIONS_ID_TOKEN_REQUEST_URL \
           public.ecr.aws/l7o7z1g8/actions/assets-plugin-chain-utils:0dea78066b1aecbca8a3a6674aade8ee49b5d57a \
           process-outputs
