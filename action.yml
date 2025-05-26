@@ -51,7 +51,7 @@ runs:
           -e GITHUB_ENV="$GITHUB_ENV" \
           -e ACTIONS_ID_TOKEN_REQUEST_TOKEN=$ACTIONS_ID_TOKEN_REQUEST_TOKEN \
           -e ACTIONS_ID_TOKEN_REQUEST_URL=$ACTIONS_ID_TOKEN_REQUEST_URL \
-          public.ecr.aws/l7o7z1g8/actions/assets-plugin-chain-utils:0dea78066b1aecbca8a3a6674aade8ee49b5d57a \
+          public.ecr.aws/l7o7z1g8/actions/assets-plugin-chain-utils:f725443f3373e3939a1e0258f994fe6a46cf76dc \
           generate-references --asset-type "CODE"
 
     - name: Run gitleaks compliance plugin
@@ -88,5 +88,5 @@ runs:
           -e GITHUB_ENV="$GITHUB_ENV" \
           -e ACTIONS_ID_TOKEN_REQUEST_TOKEN=$ACTIONS_ID_TOKEN_REQUEST_TOKEN \
           -e ACTIONS_ID_TOKEN_REQUEST_URL=$ACTIONS_ID_TOKEN_REQUEST_URL \
-          public.ecr.aws/l7o7z1g8/actions/assets-plugin-chain-utils:0dea78066b1aecbca8a3a6674aade8ee49b5d57a \
+          public.ecr.aws/l7o7z1g8/actions/assets-plugin-chain-utils:f725443f3373e3939a1e0258f994fe6a46cf76dc \
           process-outputs
